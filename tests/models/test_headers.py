@@ -100,7 +100,7 @@ def test_headers_encoding_in_repr():
     Headers should display an encoding in the repr if required.
     """
     headers = httpx.Headers({b"custom": "example ☃".encode("utf-8")})
-    assert repr(headers) == "Headers({'custom': 'example ☃'}, encoding='utf-8')"
+    assert repr(headers) == "Headers({'custom': 'example ☃'})"
 
 
 def test_headers_list_repr():
@@ -115,17 +115,17 @@ def test_headers_list_repr():
 
 def test_headers_decode_ascii():
     """
-    Headers should decode as ascii by default.
+    Headers should decode as utf-8 by default, which is a superset of ascii.
     """
     raw_headers = [(b"Custom", b"Example")]
     headers = httpx.Headers(raw_headers)
     assert dict(headers) == {"custom": "Example"}
-    assert headers.encoding == "ascii"
+    assert headers.encoding == "utf-8"
 
 
 def test_headers_decode_utf_8():
     """
-    Headers containing non-ascii codepoints should default to decoding as utf-8.
+    Headers should decode as utf-8 by default.
     """
     raw_headers = [(b"Custom", "Code point: ☃".encode("utf-8"))]
     headers = httpx.Headers(raw_headers)
@@ -135,23 +135,17 @@ def test_headers_decode_utf_8():
 
 def test_headers_decode_iso_8859_1():
     """
-    Headers containing non-UTF-8 codepoints should default to decoding as iso-8859-1.
-    """
-    raw_headers = [(b"Custom", "Code point: ÿ".encode("iso-8859-1"))]
-    headers = httpx.Headers(raw_headers)
-    assert dict(headers) == {"custom": "Code point: ÿ"}
-    assert headers.encoding == "iso-8859-1"
-
-
-def test_headers_decode_explicit_encoding():
-    """
     An explicit encoding may be set on headers in order to force a
     particular decoding.
     """
-    raw_headers = [(b"Custom", "Code point: ☃".encode("utf-8"))]
+    raw_headers = [(b"Custom", "Code point: ÿ".encode("iso-8859-1"))]
     headers = httpx.Headers(raw_headers)
-    headers.encoding = "iso-8859-1"
-    assert dict(headers) == {"custom": "Code point: â\x98\x83"}
+    assert dict(headers) == {"custom": "Code point: �"}
+    assert headers.encoding == "utf-8"
+
+    raw_headers = [(b"Custom", "Code point: ÿ".encode("iso-8859-1"))]
+    headers = httpx.Headers(raw_headers, encoding="iso-8859-1")
+    assert dict(headers) == {"custom": "Code point: ÿ"}
     assert headers.encoding == "iso-8859-1"
 
 

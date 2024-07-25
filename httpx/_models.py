@@ -64,7 +64,7 @@ class Headers(typing.MutableMapping[str, str]):
     def __init__(
         self,
         headers: HeaderTypes | None = None,
-        encoding: str | None = None,
+        encoding: str = "utf-8",
     ) -> None:
         if headers is None:
             self._list = []  # type: typing.List[typing.Tuple[bytes, bytes, bytes]]
@@ -89,36 +89,7 @@ class Headers(typing.MutableMapping[str, str]):
                 for k, v in headers
             ]
 
-        self._encoding = encoding
-
-    @property
-    def encoding(self) -> str:
-        """
-        Header encoding is mandated as ascii, but we allow fallbacks to utf-8
-        or iso-8859-1.
-        """
-        if self._encoding is None:
-            for encoding in ["ascii", "utf-8"]:
-                for key, value in self.raw:
-                    try:
-                        key.decode(encoding)
-                        value.decode(encoding)
-                    except UnicodeDecodeError:
-                        break
-                else:
-                    # The else block runs if 'break' did not occur, meaning
-                    # all values fitted the encoding.
-                    self._encoding = encoding
-                    break
-            else:
-                # The ISO-8859-1 encoding covers all 256 code points in a byte,
-                # so will never raise decode errors.
-                self._encoding = "iso-8859-1"
-        return self._encoding
-
-    @encoding.setter
-    def encoding(self, value: str) -> None:
-        self._encoding = value
+        self.encoding = encoding
 
     @property
     def raw(self) -> list[tuple[bytes, bytes]]:
@@ -128,13 +99,13 @@ class Headers(typing.MutableMapping[str, str]):
         return [(raw_key, value) for raw_key, _, value in self._list]
 
     def keys(self) -> typing.KeysView[str]:
-        return {key.decode(self.encoding): None for _, key, value in self._list}.keys()
+        return {key.decode("ascii"): None for _, key, value in self._list}.keys()
 
     def values(self) -> typing.ValuesView[str]:
         values_dict: dict[str, str] = {}
         for _, key, value in self._list:
-            str_key = key.decode(self.encoding)
-            str_value = value.decode(self.encoding)
+            str_key = key.decode("ascii")
+            str_value = value.decode(self.encoding, errors="replace")
             if str_key in values_dict:
                 values_dict[str_key] += f", {str_value}"
             else:
@@ -148,8 +119,8 @@ class Headers(typing.MutableMapping[str, str]):
         """
         values_dict: dict[str, str] = {}
         for _, key, value in self._list:
-            str_key = key.decode(self.encoding)
-            str_value = value.decode(self.encoding)
+            str_key = key.decode("ascii")
+            str_value = value.decode(self.encoding, errors="replace")
             if str_key in values_dict:
                 values_dict[str_key] += f", {str_value}"
             else:
@@ -163,7 +134,7 @@ class Headers(typing.MutableMapping[str, str]):
         comma separated value.
         """
         return [
-            (key.decode(self.encoding), value.decode(self.encoding))
+            (key.decode("ascii"), value.decode(self.encoding, errors="replace"))
             for _, key, value in self._list
         ]
 
@@ -183,12 +154,12 @@ class Headers(typing.MutableMapping[str, str]):
         If `split_commas=True` is passed, then any comma separated header
         values are split into multiple return strings.
         """
-        get_header_key = key.lower().encode(self.encoding)
+        get_header_key = key.encode("ascii").lower()
 
         values = [
-            item_value.decode(self.encoding)
+            item_value.decode(self.encoding, errors="replace")
             for _, item_key, item_value in self._list
-            if item_key.lower() == get_header_key
+            if item_key == get_header_key
         ]
 
         if not split_commas:
@@ -216,10 +187,10 @@ class Headers(typing.MutableMapping[str, str]):
         If there are multiple headers with the same key, then we concatenate
         them with commas. See: https://tools.ietf.org/html/rfc7230#section-3.2.2
         """
-        normalized_key = key.lower().encode(self.encoding)
+        normalized_key = key.encode("ascii").lower()
 
         items = [
-            header_value.decode(self.encoding)
+            header_value.decode(self.encoding, errors="replace")
             for _, header_key, header_value in self._list
             if header_key == normalized_key
         ]
@@ -234,8 +205,8 @@ class Headers(typing.MutableMapping[str, str]):
         Set the header `key` to `value`, removing any duplicate entries.
         Retains insertion order.
         """
-        set_key = key.encode(self._encoding or "utf-8")
-        set_value = value.encode(self._encoding or "utf-8")
+        set_key = key.encode("ascii")
+        set_value = value.encode(self.encoding)
         lookup_key = set_key.lower()
 
         found_indexes = [
@@ -257,7 +228,7 @@ class Headers(typing.MutableMapping[str, str]):
         """
         Remove the header `key`.
         """
-        del_key = key.lower().encode(self.encoding)
+        del_key = key.lower().encode("ascii")
 
         pop_indexes = [
             idx
@@ -272,7 +243,7 @@ class Headers(typing.MutableMapping[str, str]):
             del self._list[idx]
 
     def __contains__(self, key: typing.Any) -> bool:
-        header_key = key.lower().encode(self.encoding)
+        header_key = key.lower().encode("ascii")
         return header_key in [key for _, key, _ in self._list]
 
     def __iter__(self) -> typing.Iterator[typing.Any]:
@@ -295,7 +266,7 @@ class Headers(typing.MutableMapping[str, str]):
         class_name = self.__class__.__name__
 
         encoding_str = ""
-        if self.encoding != "ascii":
+        if self.encoding != "utf-8":
             encoding_str = f", encoding={self.encoding!r}"
 
         as_list = list(obfuscate_sensitive_headers(self.multi_items()))
