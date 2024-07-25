@@ -73,8 +73,8 @@ class Headers(typing.MutableMapping[str, str]):
         elif isinstance(headers, Mapping):
             self._list = [
                 (
-                    normalize_header_key(k, lower=False, encoding=encoding),
-                    normalize_header_key(k, lower=True, encoding=encoding),
+                    normalize_header_key(k, lower=False, encoding="ascii"),
+                    normalize_header_key(k, lower=True, encoding="ascii"),
                     normalize_header_value(v, encoding),
                 )
                 for k, v in headers.items()
@@ -82,8 +82,8 @@ class Headers(typing.MutableMapping[str, str]):
         else:
             self._list = [
                 (
-                    normalize_header_key(k, lower=False, encoding=encoding),
-                    normalize_header_key(k, lower=True, encoding=encoding),
+                    normalize_header_key(k, lower=False, encoding="ascii"),
+                    normalize_header_key(k, lower=True, encoding="ascii"),
                     normalize_header_value(v, encoding),
                 )
                 for k, v in headers
