@@ -6,9 +6,7 @@ import ipaddress
 import mimetypes
 import os
 import re
-import time
 import typing
-from pathlib import Path
 from urllib.request import getproxies
 
 from ._types import PrimitiveData
@@ -89,18 +87,6 @@ def format_form_param(name: str, value: str) -> bytes:
 
     value = _HTML5_FORM_ENCODING_RE.sub(replacer, value)
     return f'{name}="{value}"'.encode()
-
-
-def get_ca_bundle_from_env() -> str | None:
-    if "SSL_CERT_FILE" in os.environ:
-        ssl_file = Path(os.environ["SSL_CERT_FILE"])
-        if ssl_file.is_file():
-            return str(ssl_file)
-    if "SSL_CERT_DIR" in os.environ:
-        ssl_path = Path(os.environ["SSL_CERT_DIR"])
-        if ssl_path.is_dir():
-            return str(ssl_path)
-    return None
 
 
 def parse_header_links(value: str) -> list[dict[str, str]]:
@@ -286,22 +272,6 @@ def peek_filelike_length(stream: typing.Any) -> int | None:
             return None
 
     return length
-
-
-class Timer:
-    def sync_start(self) -> None:
-        self.started = time.perf_counter()
-
-    async def async_start(self) -> None:
-        self.started = time.perf_counter()
-
-    def sync_elapsed(self) -> float:
-        now = time.perf_counter()
-        return now - self.started
-
-    async def async_elapsed(self) -> float:
-        now = time.perf_counter()
-        return now - self.started
 
 
 class URLPattern:
