@@ -8,7 +8,7 @@ import pytest
 import httpx
 
 if typing.TYPE_CHECKING:  # pragma: no cover
-    from conftest import TestServer
+    from conftest import TestServer  # pragma: no cover
 
 
 def test_httpcore_all_exceptions_mapped() -> None:

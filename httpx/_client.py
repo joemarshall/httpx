@@ -3,12 +3,14 @@ from __future__ import annotations
 import datetime
 import enum
 import logging
-import ssl
 import time
 import typing
 import warnings
 from contextlib import asynccontextmanager, contextmanager
 from types import TracebackType
+
+if typing.TYPE_CHECKING:
+    import ssl  # pragma: no cover
 
 from .__version__ import __version__
 from ._auth import Auth, BasicAuth, FunctionAuth

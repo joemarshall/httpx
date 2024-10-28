@@ -23,7 +23,7 @@ from ._status_codes import codes
 # don't import httpcore until we
 # use a transport which needs it
 if typing.TYPE_CHECKING:
-    import httpcore
+    import httpcore  # pragma: no cover
 
 
 def print_help() -> None:

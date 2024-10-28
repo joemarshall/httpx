@@ -27,9 +27,12 @@ client = httpx.Client(transport=transport)
 from __future__ import annotations
 
 import contextlib
-import ssl
 import typing
 from types import TracebackType
+
+if typing.TYPE_CHECKING:
+    import ssl  # pragma: no cover
+
 
 from .._config import DEFAULT_LIMITS, Limits, Proxy, SSLContext
 from .._exceptions import (
@@ -92,7 +95,7 @@ def map_httpcore_exceptions() -> typing.Iterator[None]:
 
 
 if typing.TYPE_CHECKING:
-    import httpx
+    import httpx  # pragma: no cover
 
 HTTPCORE_EXC_MAP: dict[type[Exception], type[httpx.HTTPError]] = {}
 
@@ -146,6 +149,7 @@ class HTTPTransport(BaseTransport):
         socket_options: typing.Iterable[SOCKET_OPTION] | None = None,
     ) -> None:
         import httpcore
+
         proxy = Proxy(url=proxy) if isinstance(proxy, (str, URL)) else proxy
         ssl_context = ssl_context or SSLContext()
 
@@ -287,6 +291,7 @@ class AsyncHTTPTransport(AsyncBaseTransport):
         socket_options: typing.Iterable[SOCKET_OPTION] | None = None,
     ) -> None:
         import httpcore
+
         proxy = Proxy(url=proxy) if isinstance(proxy, (str, URL)) else proxy
         ssl_context = ssl_context or SSLContext()
 

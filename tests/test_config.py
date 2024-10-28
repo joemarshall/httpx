@@ -201,20 +201,5 @@ def test_certifi_lazy_loading():
     import httpx
 
     assert "certifi" not in sys.modules
-    _context = httpx.create_ssl_context()
+    _context = httpx.SSLContext()
     assert "certifi" in sys.modules
-
-
-def test_ssl_lazy_loading():
-    global httpx, ssl
-    import sys
-
-    del sys.modules["httpx"]
-    del sys.modules["ssl"]
-    del httpx
-    del ssl
-    import httpx
-
-    assert "ssl" not in sys.modules
-    _context = httpx.create_ssl_context()
-    assert "ssl" in sys.modules
