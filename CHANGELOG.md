@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+### Changed
+
+* Rename `httpx._transports.default` to `httpx._transports.httpcore`, to make it clear what backend library it uses (and to prepare for different library 
+in the Emscripten build.).
+
 ## 0.28.1 (6th December, 2024)
 
 * Fix SSL case where `verify=False` together with client side certificates.
